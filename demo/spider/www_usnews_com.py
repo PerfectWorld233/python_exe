@@ -66,12 +66,6 @@ for ii in items:
         aa = addr.text
     result['website'] = aa
     sql = "insert into abroad_school VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    # print(result.values())
-    # exit()
-    # jj = ['Harvard University', '\n          #1\n        ', '100', 'https://www.usnews.com/education/best-global-universities/harvard-university-166027', '\nAddress\nCambridge, Massachusetts 02138\nUnited States\n', '\nBest Global Universities\n', '\nWebsite\nwww.harvard.edu\n']
     cursor.execute(sql, tuple(result.values()))
-
-    db.close()
-    print(result)
-    exit()
+db.close()
 
