@@ -1,5 +1,6 @@
 
 import urllib.request
+import json
 import os
 import time
 import requests
@@ -10,20 +11,26 @@ import  pymysql.cursors
 
 # 打开数据库连接
 # db = pymysql.connect("114.215.91.48","root","root","news")
-db = pymysql.connect("localhost","root","root","exe")
+db = pymysql.connect("localhost","root","root","news")
 # 使用 cursor() 方法创建一个游标对象 cursor
 cursor = db.cursor()
 # 使用预处理语句创建表
-sql_creat = """CREATE TABLE IF NOT EXISTS abroad_school (
-         school_name  varchar(250) NOT NULL,
-         ranking char(4),
-         global_score char(10),
-         url_d varchar(255),
-         address  varchar(250),
-         website varchar(200),
-         grade varchar(20))
+sql_creat = """CREATE TABLE IF NOT EXISTS abroad_school_rank (
+         city  text,
+         name text,
+         country_urlname text,
+         url text,
+         global_rank  text,
+         rank text,
+         country_subdivision text,
+         score text,
+         address_line text,
+         country_name text,
+         urlname text,
+         overall_rank_is_tied text,
+         id text,
+         rank_is_tied text)
          ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"""
-# school_name`,`ranking`,`global_score`,`url_d`,`address`,`grade`,`website`
 cursor.execute(sql_creat)
 def open_url(url):
     # 根据当前URL创建请求包
@@ -47,8 +54,52 @@ def open_url(url):
     # 返回请求到的HTML信息
     return response.read()
 
-url = 'https://www.usnews.com/education/best-global-universities/rankings'
-html = open_url(url).decode('utf-8')
+for pp in range (1,1000):
+    url = 'https://www.usnews.com/education/best-global-universities/rankings?page='+str(pp)+'&format=json'
+    html = open_url(url).decode('utf-8')
+    result_j = json.loads(html)
+    # "city": "Ann Arbor",
+    # "name": "University of Michigan--Ann Arbor",
+    # "country_urlname": "united-states",
+    # "url": "https://www.usnews.com/education/best-global-universities/university-of-michigan-ann-arbor-170976",
+    # "global_rank": 17,
+    # "rank": 17,
+    # "country_subdivision": "MI",
+    # "score": 83.4,
+    # "address_line": "Ann Arbor, MI",
+    # "country_name": "United States",
+    # "urlname": "university-of-michigan-ann-arbor",
+    # "overall_rank_is_tied": true,
+    # "id": "170976",
+    # "rank_is_tied": true
+    for ii in result_j.get('results'):
+        # html_d = open_url(ii.get('url')).decode('utf-8')
+        # soup_d = BeautifulSoup(html_d)
+        # ii['address'] = soup_d.find('div', 'directory-data').text
+        # ii['grade'] = soup_d.find('span', 't-large').text
+        # for addr in soup_d.find_all('div', 'directory-data'):
+        #     aa = addr.text
+        # ii['website'] = aa
+        # ii['summary_d'] = soup_d.find('div', attrs={'data-test-id', 'summary-blurb'}).text
+
+        sql = "insert into abroad_school_rank VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql, tuple(ii.values()))
+db.close()
+exit()
+# html_d = open_url(result.get('results')).decode('utf-8')
+# soup_d = BeautifulSoup(html_d)
+# result['address'] = soup_d.find('div', 'directory-data').text
+# result['grade'] = soup_d.find('span', 't-large').text
+# for addr in soup_d.find_all('div', 'directory-data'):
+#     aa = addr.text
+# result['website'] = aa
+# sql = "insert into abroad_school VALUES (%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s)"
+# cursor.execute(sql, tuple(result.values()))
+# db.close()
+result = json.dumps(html)
+# result = tuple(result.values())
+print(result)
+exit()
 soup = BeautifulSoup(html)
 items = soup.find('div', id='resultsMain').find_all('div', 'sep')
 result = {}
